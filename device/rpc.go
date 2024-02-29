@@ -68,12 +68,14 @@ func (d *DeviceManager) SwitchInput(context *gin.Context) {
 	params := make(map[string]interface{})
 	if len(splitPort) < 2 {
 		context.JSON(http.StatusBadRequest, fmt.Sprintf("ports configured incorrectly (should follow format \"hdmi!2\"): %s", port))
+		return
 	}
 	params["uri"] = fmt.Sprintf("extInput:%s?port=%s", splitPort[0], splitPort[1])
 
 	err := helpers.BuildAndSendPayload(address, "avContent", "setPlayContent", params)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	log.L.Debugf("Done.")
@@ -87,11 +89,12 @@ func (d *DeviceManager) SetVolume(context *gin.Context) {
 	volume, err := strconv.Atoi(value)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, err.Error())
+		return
 	} else if volume > 100 || volume < 0 {
 		context.JSON(http.StatusBadRequest, "Error: volume must be a value from 0 to 100!")
+		return
 	}
 
-	log.L.Debugf("Setting volume for %s to %v...", address, value)
 	d.Log.Debug("Setting volume for %s to %v...", zap.String("address", context.Param("address")), zap.String("value", context.Param("value")))
 
 	params := make(map[string]interface{})
@@ -101,6 +104,7 @@ func (d *DeviceManager) SetVolume(context *gin.Context) {
 	err = helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	//do the same for the headphone
@@ -111,27 +115,43 @@ func (d *DeviceManager) SetVolume(context *gin.Context) {
 	err = helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	log.L.Debugf("Done.")
 	context.JSON(http.StatusOK, status.Volume{Volume: volume})
 }
 
-func VolumeUnmute(context echo.Context) error {
+func (d *DeviceManager) VolumeUnmute(context *gin.Context) {
 	address := context.Param("address")
 	log.L.Debugf("Unmuting %s...", address)
 
 	err := setMute(context, address, false, 4)
 	if err != nil {
 		log.L.Debugf("Error: %v", err.Error())
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	log.L.Debugf("Done.")
-	return context.JSON(http.StatusOK, status.Mute{Muted: false})
+	context.JSON(http.StatusOK, status.Mute{Muted: false})
 }
 
-func setMute(context echo.Context, address string, status bool, retryCount int) error {
+func (d *DeviceManager) VolumeMute(context *gin.Context) {
+	log.L.Debugf("Muting %s...", context.Param("address"))
+
+	err := setMute(context, context.Param("address"), true, 4)
+	if err != nil {
+		log.L.Debugf("Error: %v", err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.L.Debugf("Done.")
+	context.JSON(http.StatusOK, status.Mute{Muted: true})
+}
+
+func setMute(context *gin.Context, address string, status bool, retryCount int) error {
 	params := make(map[string]interface{})
 	params["status"] = status
 
@@ -160,51 +180,40 @@ func setMute(context echo.Context, address string, status bool, retryCount int) 
 	return fmt.Errorf("Attempted to set mute status %v times, could not", initCount+1)
 }
 
-func VolumeMute(context echo.Context) error {
-	log.L.Debugf("Muting %s...", context.Param("address"))
-
-	err := setMute(context, context.Param("address"), true, 4)
-	if err != nil {
-		log.L.Debugf("Error: %v", err.Error())
-		return context.JSON(http.StatusInternalServerError, err.Error())
-	}
-
-	log.L.Debugf("Done.")
-	return context.JSON(http.StatusOK, status.Mute{Muted: true})
-}
-
-func BlankDisplay(context echo.Context) error {
+func (d *DeviceManager) BlankDisplay(context *gin.Context) {
 	params := make(map[string]interface{})
 	params["mode"] = "pictureOff"
 
 	err := helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return context.JSON(http.StatusOK, status.Blanked{Blanked: true})
-
+	context.JSON(http.StatusOK, status.Blanked{Blanked: true})
 }
 
-func UnblankDisplay(context echo.Context) error {
+func (d *DeviceManager) UnblankDisplay(context *gin.Context) {
 	params := make(map[string]interface{})
 	params["mode"] = "off"
 
 	err := helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return context.JSON(http.StatusOK, status.Blanked{Blanked: false})
+	context.JSON(http.StatusOK, status.Blanked{Blanked: false})
 }
 
-func GetVolume(context echo.Context) error {
+func (d *DeviceManager) GetVolume(context *gin.Context) {
 	response, err := helpers.GetVolume(context.Param("address"))
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return context.JSON(http.StatusOK, response)
+	context.JSON(http.StatusOK, response)
 }
 
 // GetInput gets the input that is currently being shown on the TV
