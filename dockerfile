@@ -1,11 +1,7 @@
-FROM byuoitav/amd64-alpine
+FROM gcr.io/distroless/static
 
 ARG NAME
-ENV name=${NAME}
 
-COPY ${name}-bin ${name}-bin 
-COPY version.txt version.txt
+COPY ${NAME} /app
 
-# add any required files/folders here
-
-ENTRYPOINT ./${name}-bin
+ENTRYPOINT ["/app"]
