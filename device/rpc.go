@@ -262,7 +262,7 @@ func (d *DeviceManager) GetHardwareInfo(context *gin.Context) {
 
 // GetActiveSignal determines if the current input on the TV is active or not
 func (d *DeviceManager) GetActiveSignal(context *gin.Context) {
-	response, err := helpers.GetHardwareInfo(context.Param("address"))
+	response, err := helpers.GetActiveSignal(context.Param("address"), context.Param("port"))
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
