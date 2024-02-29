@@ -27,13 +27,13 @@ func (d *DeviceManager) RunHTTPServer(router *gin.Engine, port string) error {
 
 	// status endpoints
 	route.GET("/:address/power/status", d.GetPower)
-	// route.GET("/:address/input/current", d.GetInput)
-	// route.GET("/:address/input/list", d.GetInputList)
-	// route.GET("/:address/active/:port", d.GetActiveSignal)
+	route.GET("/:address/input/current", d.GetInput)
+	route.GET("/:address/input/list", d.GetInputList)
+	route.GET("/:address/active/:port", d.GetActiveSignal)
 	route.GET("/:address/volume/level", d.GetVolume)
-	// route.GET("/:address/volume/mute/status", d.GetMute)
-	// route.GET("/:address/display/status", d.GetBlank)
-	// route.GET("/:address/hardware", d.GetHardwareInfo)
+	route.GET("/:address/volume/mute/status", d.GetMute)
+	route.GET("/:address/display/status", d.GetBlank)
+	route.GET("/:address/hardware", d.GetHardwareInfo)
 
 	// log level endpoints
 	// router.PUT("/log-level/:level", log.SetLogLevel)

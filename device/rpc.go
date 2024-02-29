@@ -13,7 +13,6 @@ import (
 
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/status"
-	"github.com/labstack/echo"
 )
 
 func (d *DeviceManager) PowerOn(context *gin.Context) {
@@ -217,52 +216,57 @@ func (d *DeviceManager) GetVolume(context *gin.Context) {
 }
 
 // GetInput gets the input that is currently being shown on the TV
-func GetInput(context echo.Context) error {
+func (d *DeviceManager) GetInput(context *gin.Context) {
 	response, err := helpers.GetInput(context.Param("address"))
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return context.JSON(http.StatusOK, response)
+	context.JSON(http.StatusOK, response)
 }
 
-func GetInputList(context echo.Context) error {
-	return nil
+func (d *DeviceManager) GetInputList(context *gin.Context) {
+	return
 }
 
-func GetMute(context echo.Context) error {
+func (d *DeviceManager) GetMute(context *gin.Context) {
 	response, err := helpers.GetMute(context.Param("address"))
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return context.JSON(http.StatusOK, response)
+	context.JSON(http.StatusOK, response)
 }
 
-func GetBlank(context echo.Context) error {
+func (d *DeviceManager) GetBlank(context *gin.Context) {
 	response, err := helpers.GetBlanked(context.Param("address"))
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return context.JSON(http.StatusOK, response)
+	context.JSON(http.StatusOK, response)
 }
 
-func GetHardwareInfo(context echo.Context) error {
+func (d *DeviceManager) GetHardwareInfo(context *gin.Context) {
 	response, err := helpers.GetHardwareInfo(context.Param("address"))
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return context.JSON(http.StatusOK, response)
+	context.JSON(http.StatusOK, response)
 }
 
-// GetActiveSignal determines if the current input on the TV is active or no
-func GetActiveSignal(context echo.Context) error {
-	response, err := helpers.GetActiveSignal(context.Param("address"), context.Param("port"))
+// GetActiveSignal determines if the current input on the TV is active or not
+func (d *DeviceManager) GetActiveSignal(context *gin.Context) {
+	response, err := helpers.GetHardwareInfo(context.Param("address"))
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		context.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	return context.JSON(http.StatusOK, response)
+	context.JSON(http.StatusOK, response)
 }
