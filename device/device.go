@@ -12,6 +12,10 @@ type DeviceManager struct {
 	Log *zap.Logger
 }
 
+func (d *DeviceManager) GetLogger() *zap.Logger {
+	return d.Log
+}
+
 func (d *DeviceManager) RunHTTPServer(router *gin.Engine, port string) error {
 	d.Log.Info("registering http endpoints")
 	// action endpoints

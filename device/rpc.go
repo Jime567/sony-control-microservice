@@ -14,35 +14,35 @@ import (
 )
 
 func (d *DeviceManager) PowerOn(context *gin.Context) {
-	d.Log.Debug("Powering on %s...", zap.String("address", context.Param("address")))
+	d.Log.Debug(fmt.Sprintf("Powering on %s...", context.Param("address")))
 
-	err := helpers.SetPower(context, context.Param("address"), true)
+	err := helpers.SetPower(context, context.Param("address"), true, d)
 	if err != nil {
 		d.Log.Warn("could not get power", zap.Error(err))
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	d.Log.Debug("Powered on", zap.String("power", "on"))
+	d.Log.Debug(fmt.Sprintf("Powered on"))
 	context.JSON(http.StatusOK, status.Power{Power: "on"})
 }
 
 func (d *DeviceManager) Standby(context *gin.Context) {
-	d.Log.Debug("Powering off %s...", zap.String("address", context.Param("address")))
+	d.Log.Debug(fmt.Sprintf("Powering off %s...", context.Param("address")))
 
-	err := helpers.SetPower(context, context.Param("address"), false)
+	err := helpers.SetPower(context, context.Param("address"), false, d)
 	if err != nil {
 		d.Log.Warn("could not power off", zap.Error(err))
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	d.Log.Debug("Powered off", zap.String("power", "off"))
+	d.Log.Debug(fmt.Sprintf("Powered off"))
 	context.JSON(http.StatusOK, status.Power{Power: "standby"})
 }
 
 func (d *DeviceManager) GetPower(context *gin.Context) {
-	d.Log.Debug("Getting power status of %s...", zap.String("address", context.Param("address")))
+	d.Log.Debug(fmt.Sprintf("Getting power status of %s...", context.Param("address")))
 
 	response, err := helpers.GetPower(context, context.Param("address"))
 	if err != nil {
@@ -51,12 +51,12 @@ func (d *DeviceManager) GetPower(context *gin.Context) {
 		return
 	}
 
-	d.Log.Debug("Getting Status", zap.String("Status", response.Power))
+	d.Log.Debug(fmt.Sprintf("Getting Status", response.Power))
 	context.JSON(http.StatusOK, response)
 }
 
 func (d *DeviceManager) SwitchInput(context *gin.Context) {
-	d.Log.Debug("Switching input for %s to %s ...", zap.String("address", context.Param("address")), zap.String("port", context.Param("port")))
+	d.Log.Debug(fmt.Sprintf("Switching input for %s to %s ...", context.Param("address"), context.Param("port")))
 	address := context.Param("address")
 	port := context.Param("port")
 
@@ -92,7 +92,7 @@ func (d *DeviceManager) SetVolume(context *gin.Context) {
 		return
 	}
 
-	d.Log.Debug("Setting volume for %s to %v...", zap.String("address", context.Param("address")), zap.String("value", context.Param("value")))
+	d.Log.Debug(fmt.Sprintf("Setting volume for %s to %v...", context.Param("address"), context.Param("value")))
 
 	params := make(map[string]interface{})
 	params["target"] = "speaker"
@@ -121,11 +121,11 @@ func (d *DeviceManager) SetVolume(context *gin.Context) {
 
 func (d *DeviceManager) VolumeUnmute(context *gin.Context) {
 	address := context.Param("address")
-	d.Log.Debug("Unmuting %s...", zap.String("address", address))
+	d.Log.Debug(fmt.Sprintf("Unmuting %s...", address))
 
-	err := setMute(context, address, false, 4)
+	err := d.setMute(context, address, false, 4)
 	if err != nil {
-		d.Log.Debug("Error: %v", zap.String("error", err.Error()))
+		d.Log.Debug(fmt.Sprintf("Error: %v", err.Error()))
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -135,11 +135,11 @@ func (d *DeviceManager) VolumeUnmute(context *gin.Context) {
 }
 
 func (d *DeviceManager) VolumeMute(context *gin.Context) {
-	d.Log.Debug("Muting %s...", zap.String("address", context.Param("address")))
+	d.Log.Debug(fmt.Sprintf("Muting %s...", context.Param("address")))
 
-	err := setMute(context, context.Param("address"), true, 4)
+	err := d.setMute(context, context.Param("address"), true, 4)
 	if err != nil {
-		d.Log.Debug("Error: %v", zap.String("error", err.Error()))
+		d.Log.Debug(fmt.Sprintf("Error: %v", err.Error()))
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -148,7 +148,7 @@ func (d *DeviceManager) VolumeMute(context *gin.Context) {
 	context.JSON(http.StatusOK, status.Mute{Muted: true})
 }
 
-func setMute(context *gin.Context, address string, status bool, retryCount int) error {
+func (d *DeviceManager) setMute(context *gin.Context, address string, status bool, retryCount int) error {
 	params := make(map[string]interface{})
 	params["status"] = status
 
@@ -160,7 +160,7 @@ func setMute(context *gin.Context, address string, status bool, retryCount int) 
 			return err
 		}
 		//we need to validate that it was actually muted
-		postStatus, err := helpers.GetMute(address)
+		postStatus, err := helpers.GetMute(address, d)
 		if err != nil {
 			return err
 		}
@@ -204,7 +204,7 @@ func (d *DeviceManager) UnblankDisplay(context *gin.Context) {
 }
 
 func (d *DeviceManager) GetVolume(context *gin.Context) {
-	response, err := helpers.GetVolume(context.Param("address"))
+	response, err := helpers.GetVolume(context.Param("address"), d)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -215,7 +215,7 @@ func (d *DeviceManager) GetVolume(context *gin.Context) {
 
 // GetInput gets the input that is currently being shown on the TV
 func (d *DeviceManager) GetInput(context *gin.Context) {
-	response, err := helpers.GetInput(context.Param("address"))
+	response, err := helpers.GetInput(context.Param("address"), d)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -229,7 +229,7 @@ func (d *DeviceManager) GetInputList(context *gin.Context) {
 }
 
 func (d *DeviceManager) GetMute(context *gin.Context) {
-	response, err := helpers.GetMute(context.Param("address"))
+	response, err := helpers.GetMute(context.Param("address"), d)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -239,7 +239,7 @@ func (d *DeviceManager) GetMute(context *gin.Context) {
 }
 
 func (d *DeviceManager) GetBlank(context *gin.Context) {
-	response, err := helpers.GetBlanked(context.Param("address"))
+	response, err := helpers.GetBlanked(context.Param("address"), d)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -249,7 +249,7 @@ func (d *DeviceManager) GetBlank(context *gin.Context) {
 }
 
 func (d *DeviceManager) GetHardwareInfo(context *gin.Context) {
-	response, err := helpers.GetHardwareInfo(context.Param("address"))
+	response, err := helpers.GetHardwareInfo(context.Param("address"), d)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -260,7 +260,7 @@ func (d *DeviceManager) GetHardwareInfo(context *gin.Context) {
 
 // GetActiveSignal determines if the current input on the TV is active or not
 func (d *DeviceManager) GetActiveSignal(context *gin.Context) {
-	response, err := helpers.GetActiveSignal(context.Param("address"), context.Param("port"))
+	response, err := helpers.GetActiveSignal(context.Param("address"), context.Param("port"), d)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return

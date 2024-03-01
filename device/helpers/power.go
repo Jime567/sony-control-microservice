@@ -3,14 +3,14 @@ package helpers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/byuoitav/common/status"
-	"go.uber.org/zap"
 )
 
-func SetPower(ctx context.Context, address string, status bool) error {
+func SetPower(ctx context.Context, address string, status bool, d DeviceManagerInterface) error {
 	params := make(map[string]interface{})
 	params["status"] = status
 
@@ -21,7 +21,7 @@ func SetPower(ctx context.Context, address string, status bool) error {
 		ID:      1,
 	}
 
-	logger.Info("Setting power to %v", zap.Bool("status", status))
+	d.GetLogger().Info(fmt.Sprintf("Setting power to %v", status))
 
 	_, err := PostHTTPWithContext(ctx, address, "system", payload)
 	if err != nil {
@@ -42,7 +42,7 @@ func SetPower(ctx context.Context, address string, status bool) error {
 				return err
 			}
 
-			logger.Info("Waiting for display power to change to %v, current status %s", zap.Bool("status", status), zap.String("power", power.Power))
+			d.GetLogger().Info(fmt.Sprintf("Waiting for display power to change to %v, current status %s", status, power.Power))
 
 			switch {
 			case status && power.Power == "on":

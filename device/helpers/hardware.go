@@ -3,16 +3,16 @@ package helpers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"strings"
 
 	"github.com/byuoitav/common/nerr"
 	"github.com/byuoitav/common/structs"
-	"go.uber.org/zap"
 )
 
 // GetHardwareInfo returns the hardware information for the device
-func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
+func GetHardwareInfo(address string, d DeviceManagerInterface) (structs.HardwareInfo, *nerr.E) {
 	var toReturn structs.HardwareInfo
 
 	// get the hostname
@@ -48,7 +48,11 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 		DNS:        networkInfo.DNS,
 	}
 
-	logger.Info("toReturn:", zap.Any("toReturn", toReturn))
+	d.GetLogger().Info(fmt.Sprintf(
+		"Hardware Info for %s, Model: %s, Serial: %s, Firmware: %s, IP: %s, MAC: %s, Gateway: %s, DNS: %s",
+		toReturn.Hostname, toReturn.ModelName,
+		toReturn.SerialNumber, toReturn.FirmwareVersion, toReturn.NetworkInfo.IPAddress,
+		toReturn.NetworkInfo.MACAddress, toReturn.NetworkInfo.Gateway, toReturn.NetworkInfo.DNS))
 
 	// get power status
 	powerStatus, e := GetPower(context.TODO(), address)

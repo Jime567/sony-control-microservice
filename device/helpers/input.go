@@ -7,14 +7,13 @@ import (
 	"regexp"
 
 	"github.com/byuoitav/common/nerr"
-	"go.uber.org/zap"
 
 	"github.com/byuoitav/common/status"
 	"github.com/byuoitav/common/structs"
 )
 
 // GetInput gets the input that is currently being shown on the TV
-func GetInput(address string) (status.Input, error) {
+func GetInput(address string, d DeviceManagerInterface) (status.Input, error) {
 	var output status.Input
 
 	pwrState, err := GetPower(context.TODO(), address)
@@ -44,7 +43,7 @@ func GetInput(address string) (status.Input, error) {
 	}
 	//we need to parse the response for the value
 
-	logger.Debug("%+v", zap.Any("outputStruct", outputStruct))
+	d.GetLogger().Debug(fmt.Sprintf("%+v", outputStruct))
 
 	regexStr := `extInput:(.*?)\?port=(.*)`
 	re := regexp.MustCompile(regexStr)
@@ -52,13 +51,13 @@ func GetInput(address string) (status.Input, error) {
 	matches := re.FindStringSubmatch(outputStruct.Result[0].URI)
 	output.Input = fmt.Sprintf("%v!%v", matches[1], matches[2])
 
-	logger.Info("Current Input for %s: %s", zap.String("address", address), zap.String("output.Input", output.Input))
+	d.GetLogger().Info(fmt.Sprintf("Current Input for %s: %s", address, output.Input))
 
 	return output, nil
 }
 
 // GetActiveSignal determines if the current input on the TV is active or not
-func GetActiveSignal(address, port string) (structs.ActiveSignal, *nerr.E) {
+func GetActiveSignal(address, port string, d DeviceManagerInterface) (structs.ActiveSignal, *nerr.E) {
 	var output structs.ActiveSignal
 
 	payload := SonyTVRequest{
@@ -80,7 +79,7 @@ func GetActiveSignal(address, port string) (structs.ActiveSignal, *nerr.E) {
 	}
 	//we need to parse the response for the value
 
-	logger.Debug("%+v", zap.Any("outputStruct", outputStruct))
+	d.GetLogger().Debug(fmt.Sprintf("%+v", outputStruct))
 
 	regexStr := `extInput:(.*?)\?port=(.*)`
 	re := regexp.MustCompile(regexStr)

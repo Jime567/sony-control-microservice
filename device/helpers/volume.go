@@ -2,18 +2,18 @@ package helpers
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/byuoitav/common/status"
-	"go.uber.org/zap"
 )
 
-func GetVolume(address string) (status.Volume, error) {
-	logger.Info("Getting volume for %v", zap.String("address", address))
-	parentResponse, err := getAudioInformation(address)
+func GetVolume(address string, d DeviceManagerInterface) (status.Volume, error) {
+	d.GetLogger().Info(fmt.Sprintf("Getting volume for %v", address))
+	parentResponse, err := getAudioInformation(address, d)
 	if err != nil {
 		return status.Volume{}, err
 	}
-	logger.Info("%v", zap.Any("parentResponse", parentResponse))
+	d.GetLogger().Info(fmt.Sprintf("%v", parentResponse))
 
 	var output status.Volume
 	for _, outerResult := range parentResponse.Result {
@@ -26,12 +26,12 @@ func GetVolume(address string) (status.Volume, error) {
 			}
 		}
 	}
-	logger.Info("Done")
+	d.GetLogger().Info("Done")
 
 	return output, nil
 }
 
-func getAudioInformation(address string) (SonyAudioResponse, error) {
+func getAudioInformation(address string, d DeviceManagerInterface) (SonyAudioResponse, error) {
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{},
 		Method:  "getVolumeInformation",
@@ -39,22 +39,22 @@ func getAudioInformation(address string) (SonyAudioResponse, error) {
 		ID:      1,
 	}
 
-	logger.Info("%+v", zap.Any("payload", payload))
+	d.GetLogger().Info(fmt.Sprint("%+v", payload))
 
 	resp, err := PostHTTP(address, payload, "audio")
 
 	parentResponse := SonyAudioResponse{}
 
-	logger.Info("%s", zap.ByteString("resp", resp))
+	d.GetLogger().Info(fmt.Sprintf("%s", resp))
 
 	err = json.Unmarshal(resp, &parentResponse)
 	return parentResponse, err
 
 }
 
-func GetMute(address string) (status.Mute, error) {
-	logger.Info("Getting mute status for %v", zap.String("address", address))
-	parentResponse, err := getAudioInformation(address)
+func GetMute(address string, d DeviceManagerInterface) (status.Mute, error) {
+	d.GetLogger().Info(fmt.Sprintf("Getting mute status for %v", address))
+	parentResponse, err := getAudioInformation(address, d)
 	if err != nil {
 		return status.Mute{}, err
 	}
@@ -62,13 +62,13 @@ func GetMute(address string) (status.Mute, error) {
 	for _, outerResult := range parentResponse.Result {
 		for _, result := range outerResult {
 			if result.Target == "speaker" {
-				logger.Info("local mute: %v", zap.Bool("mute", result.Mute))
+				d.GetLogger().Info(fmt.Sprintf("local mute: %v", result.Mute))
 				output.Muted = result.Mute
 			}
 		}
 	}
 
-	logger.Info("Done")
+	d.GetLogger().Info("Done")
 
 	return output, nil
 }

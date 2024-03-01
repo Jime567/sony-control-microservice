@@ -9,7 +9,9 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger *zap.Logger
+type DeviceManagerInterface interface {
+	GetLogger() *zap.Logger
+}
 
 type SonyBaseResult struct {
 	ID     int                 `json:"id"`
@@ -17,8 +19,7 @@ type SonyBaseResult struct {
 	Error  []interface{}       `json:"error"`
 }
 
-func GetBlanked(address string) (status.Blanked, error) {
-
+func GetBlanked(address string, d DeviceManagerInterface) (status.Blanked, error) {
 	var blanked status.Blanked
 
 	payload := SonyTVRequest{
@@ -27,12 +28,11 @@ func GetBlanked(address string) (status.Blanked, error) {
 		Version: "1.0",
 		ID:      1,
 	}
-
-	logger.Info("%+v", zap.Any("payload", payload))
+	d.GetLogger().Info(fmt.Sprintf("%v", payload))
 
 	resp, err := PostHTTP(address, payload, "system")
 	if err != nil {
-		logger.Info("ERROR: %v", zap.String("error", err.Error()))
+		d.GetLogger().Info(fmt.Sprintf("ERROR: %v", err.Error()))
 		return blanked, err
 	}
 
