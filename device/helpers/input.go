@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/nerr"
+	"go.uber.org/zap"
 
 	"github.com/byuoitav/common/status"
 	"github.com/byuoitav/common/structs"
@@ -44,7 +44,7 @@ func GetInput(address string) (status.Input, error) {
 	}
 	//we need to parse the response for the value
 
-	log.L.Debugf("%+v", outputStruct)
+	logger.Debug("%+v", zap.Any("outputStruct", outputStruct))
 
 	regexStr := `extInput:(.*?)\?port=(.*)`
 	re := regexp.MustCompile(regexStr)
@@ -52,7 +52,7 @@ func GetInput(address string) (status.Input, error) {
 	matches := re.FindStringSubmatch(outputStruct.Result[0].URI)
 	output.Input = fmt.Sprintf("%v!%v", matches[1], matches[2])
 
-	log.L.Infof("Current Input for %s: %s", address, output.Input)
+	logger.Info("Current Input for %s: %s", zap.String("address", address), zap.String("output.Input", output.Input))
 
 	return output, nil
 }
@@ -80,7 +80,7 @@ func GetActiveSignal(address, port string) (structs.ActiveSignal, *nerr.E) {
 	}
 	//we need to parse the response for the value
 
-	log.L.Debugf("%+v", outputStruct)
+	logger.Debug("%+v", zap.Any("outputStruct", outputStruct))
 
 	regexStr := `extInput:(.*?)\?port=(.*)`
 	re := regexp.MustCompile(regexStr)

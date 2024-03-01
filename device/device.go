@@ -35,10 +35,6 @@ func (d *DeviceManager) RunHTTPServer(router *gin.Engine, port string) error {
 	route.GET("/:address/display/status", d.GetBlank)
 	route.GET("/:address/hardware", d.GetHardwareInfo)
 
-	// log level endpoints
-	// router.PUT("/log-level/:level", log.SetLogLevel)
-	// router.GET("/log-level", log.GetLogLevel)
-
 	server := &http.Server{
 		Addr:           port,
 		MaxHeaderBytes: 1021 * 10,

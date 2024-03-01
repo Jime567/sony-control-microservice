@@ -6,9 +6,9 @@ import (
 	"net"
 	"strings"
 
-	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/nerr"
 	"github.com/byuoitav/common/structs"
+	"go.uber.org/zap"
 )
 
 // GetHardwareInfo returns the hardware information for the device
@@ -48,7 +48,7 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 		DNS:        networkInfo.DNS,
 	}
 
-	log.L.Info(toReturn)
+	logger.Info("toReturn:", zap.Any("toReturn", toReturn))
 
 	// get power status
 	powerStatus, e := GetPower(context.TODO(), address)

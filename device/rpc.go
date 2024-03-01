@@ -7,12 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/byuoitav/common/status"
 	"github.com/byuoitav/sony-control-microservice/device/helpers"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-
-	"github.com/byuoitav/common/log"
-	"github.com/byuoitav/common/status"
 )
 
 func (d *DeviceManager) PowerOn(context *gin.Context) {
@@ -77,7 +75,7 @@ func (d *DeviceManager) SwitchInput(context *gin.Context) {
 		return
 	}
 
-	log.L.Debugf("Done.")
+	d.Log.Info("Done.")
 	context.JSON(http.StatusOK, status.Input{Input: port})
 }
 
@@ -117,36 +115,36 @@ func (d *DeviceManager) SetVolume(context *gin.Context) {
 		return
 	}
 
-	log.L.Debugf("Done.")
+	d.Log.Info("Done.")
 	context.JSON(http.StatusOK, status.Volume{Volume: volume})
 }
 
 func (d *DeviceManager) VolumeUnmute(context *gin.Context) {
 	address := context.Param("address")
-	log.L.Debugf("Unmuting %s...", address)
+	d.Log.Debug("Unmuting %s...", zap.String("address", address))
 
 	err := setMute(context, address, false, 4)
 	if err != nil {
-		log.L.Debugf("Error: %v", err.Error())
+		d.Log.Debug("Error: %v", zap.String("error", err.Error()))
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	log.L.Debugf("Done.")
+	d.Log.Debug("Done.")
 	context.JSON(http.StatusOK, status.Mute{Muted: false})
 }
 
 func (d *DeviceManager) VolumeMute(context *gin.Context) {
-	log.L.Debugf("Muting %s...", context.Param("address"))
+	d.Log.Debug("Muting %s...", zap.String("address", context.Param("address")))
 
 	err := setMute(context, context.Param("address"), true, 4)
 	if err != nil {
-		log.L.Debugf("Error: %v", err.Error())
+		d.Log.Debug("Error: %v", zap.String("error", err.Error()))
 		context.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	log.L.Debugf("Done.")
+	d.Log.Debug("Done.")
 	context.JSON(http.StatusOK, status.Mute{Muted: true})
 }
 

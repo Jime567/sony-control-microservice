@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/byuoitav/common/log"
-
 	"github.com/byuoitav/common/status"
+	"go.uber.org/zap"
 )
+
+var logger *zap.Logger
 
 type SonyBaseResult struct {
 	ID     int                 `json:"id"`
@@ -27,11 +28,11 @@ func GetBlanked(address string) (status.Blanked, error) {
 		ID:      1,
 	}
 
-	log.L.Infof("%+v", payload)
+	logger.Info("%+v", zap.Any("payload", payload))
 
 	resp, err := PostHTTP(address, payload, "system")
 	if err != nil {
-		log.L.Infof("ERROR: %v", err.Error())
+		logger.Info("ERROR: %v", zap.String("error", err.Error()))
 		return blanked, err
 	}
 

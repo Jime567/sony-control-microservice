@@ -6,9 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byuoitav/common/log"
-
 	"github.com/byuoitav/common/status"
+	"go.uber.org/zap"
 )
 
 func SetPower(ctx context.Context, address string, status bool) error {
@@ -22,7 +21,7 @@ func SetPower(ctx context.Context, address string, status bool) error {
 		ID:      1,
 	}
 
-	log.L.Infof("Setting power to %v", status)
+	logger.Info("Setting power to %v", zap.Bool("status", status))
 
 	_, err := PostHTTPWithContext(ctx, address, "system", payload)
 	if err != nil {
@@ -43,7 +42,7 @@ func SetPower(ctx context.Context, address string, status bool) error {
 				return err
 			}
 
-			log.L.Infof("Waiting for display power to change to %v, current status %s", status, power.Power)
+			logger.Info("Waiting for display power to change to %v, current status %s", zap.Bool("status", status), zap.String("power", power.Power))
 
 			switch {
 			case status && power.Power == "on":
