@@ -6,18 +6,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 )
 
-//SonyAudioResponse is the parent struct returned when we query audio state
+// SonyAudioResponse is the parent struct returned when we query audio state
 type SonyAudioResponse struct {
 	Result [][]SonyAudioSettings `json:"result"`
 	ID     int                   `json:"id"`
 }
 
-//SonyAudioSettings is the child struct returned
+// SonyAudioSettings is the child struct returned
 type SonyAudioSettings struct {
 	Target    string `json:"target"`
 	Volume    int    `json:"volume"`
@@ -44,7 +44,7 @@ type SonyMultiAVContentResponse struct {
 	ID     int                       `json:"id"`
 }
 
-//SonyTVRequest represents the struct we need to send.
+// SonyTVRequest represents the struct we need to send.
 type SonyTVRequest struct {
 	Method  string                   `json:"method"`
 	Version string                   `json:"version"`
@@ -107,20 +107,20 @@ func PostHTTPWithContext(ctx context.Context, address, service string, payload S
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	switch {
 	case err != nil:
 		return []byte{}, err
 	case resp.StatusCode != http.StatusOK:
 		return []byte{}, errors.New(string(body))
 	case body == nil:
-		return []byte{}, errors.New("Response from device was blank")
+		return []byte{}, errors.New("response from device was blank")
 	}
 
 	return body, nil
 }
 
-//PostHTTP just sends a request
+// PostHTTP just sends a request
 func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, error) {
 	return PostHTTPWithContext(context.TODO(), address, service, payload)
 }
