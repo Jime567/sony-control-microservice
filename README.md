@@ -30,7 +30,10 @@ A microservice for controlling Sony TVs. Runs on port 8007 by default.
 
 ## Flags
 * `-port`, `-p` - The port to run the microservice on. Defaults to 8007
+    * `go run cmd/main.go cmd/deps.go -port 8007`
+
 * `-log`, `-l` - The log level to run the microservice at. Defaults to info
+    * `go run cmd/main.go cmd/deps.go -l debug`
 
 ## Setup
 Be sure to set the `SONY_TV_PSK` environment variable on the machine that is going to be running this microservice. Without it, no commands can be sent to TVs.
