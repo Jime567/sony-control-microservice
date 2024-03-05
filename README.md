@@ -16,6 +16,8 @@ A microservice for controlling Sony TVs. Runs on port 8007 by default.
 
 
 ### Status
+* `/ping` - Check if the microservice is running
+* `/status` - Returns good if microservice is running
 * `/:address/power/status` - Get the power status of the TV
 
 * `/:address/input/current` - Get the current input of the TV
