@@ -55,7 +55,7 @@ func GetHardwareInfo(address string, d DeviceManagerInterface) (structs.Hardware
 		"Hardware Info for %s, Model: %s, Serial: %s, Firmware: %s, IP: %s, MAC: %s, Gateway: %s, DNS: %s",
 		toReturn.Hostname, toReturn.ModelName,
 		toReturn.SerialNumber, toReturn.FirmwareVersion, toReturn.NetworkInfo.IPAddress,
-		toReturn.NetworkInfo.MACAddress, toReturn.NetworkInfo.Gateway, toReturn.NetworkInfo.DNS))
+		toReturn.NetworkInfo.MACAddress, toReturn.NetworkInfo.Gateway, toReturn.NetworkInfo.DNS), zap.String("address", toReturn.NetworkInfo.IPAddress))
 
 	// get power status
 	powerStatus, e := GetPower(context.TODO(), address)

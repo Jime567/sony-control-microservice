@@ -14,7 +14,7 @@ import (
 )
 
 func (d *DeviceManager) PowerOn(context *gin.Context) {
-	d.Log.Debug(fmt.Sprintf("Powering on %s...", context.Param("address")))
+	d.Log.Debug(fmt.Sprintf("Powering on %s...", context.Param("address")), zap.String("address", context.Param("address")))
 
 	err := helpers.SetPower(context, context.Param("address"), true, d)
 	if err != nil {
@@ -28,7 +28,7 @@ func (d *DeviceManager) PowerOn(context *gin.Context) {
 }
 
 func (d *DeviceManager) Standby(context *gin.Context) {
-	d.Log.Debug(fmt.Sprintf("Powering off %s...", context.Param("address")))
+	d.Log.Debug(fmt.Sprintf("Powering off %s...", context.Param("address")), zap.String("address", context.Param("address")))
 
 	err := helpers.SetPower(context, context.Param("address"), false, d)
 	if err != nil {
@@ -37,12 +37,12 @@ func (d *DeviceManager) Standby(context *gin.Context) {
 		return
 	}
 
-	d.Log.Debug(fmt.Sprintf("Powered off"))
+	d.Log.Debug(fmt.Sprintln("Powered off"), zap.String("address", context.Param("address")))
 	context.JSON(http.StatusOK, status.Power{Power: "standby"})
 }
 
 func (d *DeviceManager) GetPower(context *gin.Context) {
-	d.Log.Debug(fmt.Sprintf("Getting power status of %s...", context.Param("address")))
+	d.Log.Debug(fmt.Sprintf("Getting power status of %s...", context.Param("address")), zap.String("address", context.Param("address")))
 
 	response, err := helpers.GetPower(context, context.Param("address"))
 	if err != nil {
@@ -51,12 +51,13 @@ func (d *DeviceManager) GetPower(context *gin.Context) {
 		return
 	}
 
-	d.Log.Debug(fmt.Sprintf("Getting Status", response.Power))
+	d.Log.Debug(fmt.Sprintln("Getting Status", response.Power), zap.String("Power", response.Power))
 	context.JSON(http.StatusOK, response)
 }
 
 func (d *DeviceManager) SwitchInput(context *gin.Context) {
-	d.Log.Debug(fmt.Sprintf("Switching input for %s to %s ...", context.Param("address"), context.Param("port")), zap.String("port", context.Param("port")))
+	d.Log.Debug(fmt.Sprintf("Switching input for %s to %s ...", context.Param("address"), context.Param("port")),
+		zap.String("port", context.Param("port")))
 	address := context.Param("address")
 	port := context.Param("port")
 
@@ -124,7 +125,7 @@ func (d *DeviceManager) SetVolume(context *gin.Context) {
 
 func (d *DeviceManager) VolumeUnmute(context *gin.Context) {
 	address := context.Param("address")
-	d.Log.Debug(fmt.Sprintf("Unmuting %s...", address))
+	d.Log.Debug(fmt.Sprintf("Unmuting %s...", address), zap.String("address", address))
 
 	err := d.setMute(context, address, false, 4)
 	if err != nil {
@@ -138,7 +139,7 @@ func (d *DeviceManager) VolumeUnmute(context *gin.Context) {
 }
 
 func (d *DeviceManager) VolumeMute(context *gin.Context) {
-	d.Log.Debug(fmt.Sprintf("Muting %s...", context.Param("address")))
+	d.Log.Debug(fmt.Sprintf("Muting %s...", context.Param("address")), zap.String("address", context.Param("address")))
 
 	err := d.setMute(context, context.Param("address"), true, 4)
 	if err != nil {

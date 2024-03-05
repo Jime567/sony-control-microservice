@@ -44,7 +44,7 @@ func (d *DeviceManager) RunHTTPServer(router *gin.Engine, port string) error {
 		MaxHeaderBytes: 1021 * 10,
 	}
 
-	d.Log.Info("running http server")
+	d.Log.Info("running http server", zap.String("port", port))
 	err := router.Run(server.Addr)
 
 	d.Log.Error("http server stopped", zap.Error(err))
