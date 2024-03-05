@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/byuoitav/common/nerr"
+	"go.uber.org/zap"
 
 	"github.com/byuoitav/common/status"
 	"github.com/byuoitav/common/structs"
@@ -18,6 +19,7 @@ func GetInput(address string, d DeviceManagerInterface) (status.Input, error) {
 
 	pwrState, err := GetPower(context.TODO(), address)
 	if err != nil {
+		d.GetLogger().Error("Failed to get power state", zap.Error(err))
 		return output, err
 	}
 	if pwrState.Power != "on" {
@@ -33,6 +35,8 @@ func GetInput(address string, d DeviceManagerInterface) (status.Input, error) {
 
 	response, err := PostHTTP(address, payload, "avContent")
 	if err != nil {
+		d.GetLogger().Error(fmt.Sprintf("Faild to post to %s", address),
+			zap.String("address", address), zap.Error(err))
 		return output, err
 	}
 
@@ -69,12 +73,14 @@ func GetActiveSignal(address, port string, d DeviceManagerInterface) (structs.Ac
 
 	response, err := PostHTTP(address, payload, "avContent")
 	if err != nil {
+		d.GetLogger().Error(fmt.Sprintf("Faild to post to %s", address), zap.String("address", address), zap.Error(err))
 		return output, nerr.Translate(err)
 	}
 
 	var outputStruct SonyMultiAVContentResponse
 	err = json.Unmarshal(response, &outputStruct)
 	if err != nil || len(outputStruct.Result) < 1 {
+		d.GetLogger().Error("Failed to unmarshal response", zap.Error(err))
 		return output, nerr.Translate(err)
 	}
 	//we need to parse the response for the value

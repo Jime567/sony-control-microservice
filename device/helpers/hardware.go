@@ -9,6 +9,7 @@ import (
 
 	"github.com/byuoitav/common/nerr"
 	"github.com/byuoitav/common/structs"
+	"go.uber.org/zap"
 )
 
 // GetHardwareInfo returns the hardware information for the device
@@ -26,6 +27,7 @@ func GetHardwareInfo(address string, d DeviceManagerInterface) (structs.Hardware
 	// get Sony TV system information
 	systemInfo, err := getSystemInfo(address)
 	if err != nil {
+		d.GetLogger().Error("Could not get system info", zap.Error(err))
 		err.Addf("Could not get system info from %s", address)
 		return toReturn, err
 	}
@@ -37,6 +39,7 @@ func GetHardwareInfo(address string, d DeviceManagerInterface) (structs.Hardware
 	// get Sony TV network settings
 	networkInfo, err := getNetworkInfo(address)
 	if err != nil {
+		d.GetLogger().Error("Could not get network info", zap.Error(err))
 		err.Addf("Could not get network info from %s", address)
 		return toReturn, err
 	}
@@ -57,7 +60,9 @@ func GetHardwareInfo(address string, d DeviceManagerInterface) (structs.Hardware
 	// get power status
 	powerStatus, e := GetPower(context.TODO(), address)
 	if e != nil {
+		d.GetLogger().Error("Could not get power status", zap.Error(e))
 		err = nerr.Translate(e).Addf("Could not get power status from %s", address)
+
 		return toReturn, err
 	}
 

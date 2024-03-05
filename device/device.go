@@ -45,7 +45,9 @@ func (d *DeviceManager) RunHTTPServer(router *gin.Engine, port string) error {
 	}
 
 	d.Log.Info("running http server")
-	router.Run(server.Addr)
+	err := router.Run(server.Addr)
+
+	d.Log.Error("http server stopped", zap.Error(err))
 
 	return fmt.Errorf("http server stopped")
 }
